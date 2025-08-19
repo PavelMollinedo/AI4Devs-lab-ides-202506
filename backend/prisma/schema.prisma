@@ -18,3 +18,121 @@ model User {
   email String  @unique
   name  String?
 }
+
+model Candidate {
+  id             Int      @id @default(autoincrement())
+  personalId     String   @unique
+  firstName      String
+  secondName     String
+  firstSurname   String
+  secondSurname  String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  // Relaciones uno-a-muchos
+  emails         CandidateEmail[]
+  phones         CandidatePhone[]
+  addresses      CandidateAddress[]
+  educations     CandidateEducation[]
+  experiences    CandidateExperience[]
+
+  resumeUrl      String
+
+  stageHistory   CandidateStageHistory[]
+}
+
+model CandidateEmail {
+  id          Int        @id @default(autoincrement())
+  email       String
+  candidate   Candidate  @relation(fields: [candidateId], references: [id])
+  candidateId Int
+  isPrimary   Boolean    @default(false)
+}
+
+model CandidatePhone {
+  id            Int              @id @default(autoincrement())
+  phone         String
+  typeId        Int
+  type          PhoneType        @relation(fields: [typeId], references: [id])
+  candidate     Candidate        @relation(fields: [candidateId], references: [id])
+  candidateId   Int
+  isPrimary     Boolean          @default(false)
+}
+
+model CandidateAddress {
+  id            Int                @id @default(autoincrement())
+  address       String
+  typeId        Int
+  type          AddressType        @relation(fields: [typeId], references: [id])
+  candidate     Candidate          @relation(fields: [candidateId], references: [id])
+  candidateId   Int
+  isPrimary     Boolean            @default(false)
+}
+
+model PhoneType {
+  id    Int     @id @default(autoincrement())
+  name  String  @unique // Ej: "celular", "casa", "trabajo"
+  phones CandidatePhone[]
+}
+
+model AddressType {
+  id    Int     @id @default(autoincrement())
+  name  String  @unique // Ej: "casa", "trabajo", "otro"
+  addresses CandidateAddress[]
+}
+
+model Stage {
+  id   Int    @id @default(autoincrement())
+  name String @unique
+
+  // Relación inversa
+  stageHistory CandidateStageHistory[]
+}
+
+model CandidateStageHistory {
+  id          Int      @id @default(autoincrement())
+  candidateId Int
+  stageId     Int
+  changedAt   DateTime @default(now())
+  notes       String? // Opcional: para comentarios del cambio
+
+  candidate Candidate @relation(fields: [candidateId], references: [id])
+  stage     Stage     @relation(fields: [stageId], references: [id])
+}
+
+model CandidateEducation {
+  id            Int                @id @default(autoincrement())
+  institution   String
+  degree        String
+  startDate     DateTime
+  endDate       DateTime?
+  typeId        Int
+  type          EducationType      @relation(fields: [typeId], references: [id])
+  candidate     Candidate          @relation(fields: [candidateId], references: [id])
+  candidateId   Int
+}
+
+model EducationType {
+  id           Int                   @id @default(autoincrement())
+  name         String                @unique // Ej: "Universidad", "Maestría", "Curso"
+  educations   CandidateEducation[]
+}
+
+model CandidateExperience {
+  id            Int                  @id @default(autoincrement())
+  company       String
+  position      String
+  startDate     DateTime
+  endDate       DateTime?
+  description   String?
+  typeId        Int
+  type          ExperienceType       @relation(fields: [typeId], references: [id])
+  candidate     Candidate            @relation(fields: [candidateId], references: [id])
+  candidateId   Int
+}
+
+model ExperienceType {
+  id           Int                    @id @default(autoincrement())
+  name         String                 @unique // Ej: "Trabajo", "Práctica", "Voluntariado"
+  experiences  CandidateExperience[]
+}
